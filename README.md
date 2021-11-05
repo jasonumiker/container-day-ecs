@@ -1,6 +1,6 @@
 # Container Day - ECS Demos
 
-## Local Docker - Linux
+## Local Container Benefits
 
 ### Example of running stock nginx from Docker Hub
 
@@ -11,11 +11,6 @@
     1. Go to `http://localhost:8080`
     1. Refresh the browser tab a few times and then come back to see the new log line entries
     1. Press Ctrl-C to exit the log tailing
-    1. Run `docker exec -it nginx /bin/bash` to open a shell *within* our container (-it means interactive)
-    1. Run `cd /usr/share/nginx/html` then `cat index.html` to see the content the nginx is serving which is part of the container.
-    1. Run `echo "Test" > index.html` and then refresh the browser preview tab to see the content change
-        1. If we wanted to commit this change to the image as a new layer we could do it with a `docker commit` - otherwise it'll stay in this container but be reverted if you go back to the image.
-    1. Run `exit` to exit our interactive shell
 1. Run `docker stop nginx` to stop our container
 1. Run `docker ps -a` (-a means all including the stopped containers) to see that our container is still there but stopped. At this point it could be restarted with a `docker start nginx` if we wanted.
 1. Run `docker rm nginx` to remove the stopped container from our machine then another `docker ps -a` to confirm it is now gone
@@ -24,7 +19,7 @@
 ### Now let's customise nginx with our own content - nyancat
 1. Run `cd ~/container-day-ecs/aws-cdk-nyan-cat/nyan-cat`
 1. Run `cat Dockerfile` - this start from the upstream nginx image and then copies the contents of this path into /usr/share/nginx/html in our container - replacing the default page it ships with
-1. Run `docker build -t nyancat .` to build an image called nyancat:latest from that Dockerfile
+1. Run `docker build -t nyancat:latest .` to build an image called nyancat:latest from that Dockerfile
 1. Run `docker history nyancat:latest` to see all of the commands and layers that make up the image - see our new layer?
 1. Run `docker run --rm -d -p 8080:80 --name nyancat nyancat:latest` (--rm means to delete the container once it is stopped rather than leave it around to be restarted) 
 1. Go to `http://localhost:8080`
@@ -39,12 +34,21 @@ This example is Spring Boot's (a common Enterprise Java Framework) Docker demo/e
 
 1. Run `cd ~/container-day-ecs/top-spring-boot-docker/demo`
 1. Run `cat Dockerfile` and see our two stages - the first running a Maven install and the second taking only the JAR and putting it in a runtime container image as we don't need all those build artifacts at runtime keeping the runtime image lean.
-1. Run `docker build -t spring .` to do the build. This will take awhile for it to pull Spring Boot down from Maven etc. We don't have the JDK or tools installed on our Cloud9 but are compiling a Java app. If different apps needed different version of the JDK or tools you could easily build them all on the same machine this way too.
-1. Once that is complete re-run the `docker build -t spring .` command a 2nd time. See how much faster it goes once it has cached everything locally?
-1. Run `docker run --rm -d -p 8080:8080 --name spring spring` to run our container.
+1. Run `docker build -t spring-app:latest .` to do the build. This will take awhile for it to pull Spring Boot down from Maven etc. We don't have the JDK or tools installed on our Cloud9 but are compiling a Java app. If different apps needed different version of the JDK or tools you could easily build them all on the same machine this way too.
+1. Once that is complete re-run the `docker build -t spring-app .` command a 2nd time. See how much faster it goes once it has cached everything locally?
+1. Run `docker run --rm -d -p 8080:8080 --name spring spring-app:latest` to run our container.
 1. Run `curl http://localhost:8080` - it just returns Hello World (and Spring Boot is a very heavy framework to just do that! We wanted to see how you'd do a heavy Enterprise Java app though)
 1. Run `docker stop spring`
 
+## Local Windows Containers
+1. Run `cd windows`
+1. Run `cat Dockerfile` - the base image is Windows Server Core LTSC2019 with IIS pre-installed and we are copying our nyan-cat static content into it to serve just like we did with nginx.
+1. Run `docker build -t nyancat-windows:latest .`
+1. Run `docker run --rm -d -p 8080:80 --name nyancat-windows nyancat-windows:latest`
+1. Open http://localhost:8080 in a browser
+1. Open Developer Tools
+1. Under Network -> Headers show that the source is Microsoft-IIS 10
+1. Run `docker stop nyancat-windows`
 
 ## Copilot - Linux
 `copilot app init --domain jasonumiker.com nycancat`
@@ -61,4 +65,20 @@ Edit manifest to add alias
 `copilot init` then choose the following options:
 Edit manifest to add alias
 
-## Credit
+## CDK
+
+1. Run `cd aws-cdk-nyan-cat/cdk`
+1. Run `nano lib/cdk-stack.ts`:
+    - We're using the higher-level class ApplicationLoadBalancedFargateService
+    - We're telling it the ContainerImage is fromAsset - that it should build it locally with docker build then push it up to a new ECR repo it should create. If this image was already in ECR we could ask it to do that instead.
+    - Other than one line creating a VPC and one line creating an ECS cluster that's all we need!
+1. Run `npx cdk synth` - this generates us a CloudFormation Template. It is often a good idea to make sure that works before trying to do a `npx cdk deploy` which will generate then immediatly deploy the template.
+    - Run `nano cdk.out/CdkStack.template.json` and note it says Read 1096 lines - CDK turned a few lines of TypeScript into over 1000 lines of CloudFormation for us!
+1. Run `npx cdk deploy`
+1. Go to the ALB address in your browser
+1. Go to the ECS console and show the service running there
+
+## Credits
+
+https://github.com/nathanpeck/aws-cdk-nyan-cat
+https://github.com/spring-guides/top-spring-boot-docker
