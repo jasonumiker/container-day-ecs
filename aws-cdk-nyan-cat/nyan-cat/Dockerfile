@@ -1,4 +1,4 @@
-FROM nginx:latest
+FROM nginx:alpine
 
 MAINTAINER Dave (Daviey) Walker <email@daviey.com>
 
