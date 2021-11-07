@@ -21,9 +21,10 @@
 1. Run `cat Dockerfile` - this start from the upstream nginx image and then copies the contents of this path into /usr/share/nginx/html in our container - replacing the default page it ships with
 1. Run `docker build -t nyancat:latest .` to build an image called nyancat:latest from that Dockerfile
 1. Run `docker history nyancat:latest` to see all of the commands and layers that make up the image - see our new layer?
-1. Run `docker run --rm -d -p 8080:80 --name nyancat nyancat:latest` (--rm means to delete the container once it is stopped rather than leave it around to be restarted) 
+1. Run `docker run -d -p 8080:80 --name nyancat nyancat:latest`
 1. Go to `http://localhost:8080`
     1. See our new content that is built into the image for nginx to serve?
+1. Run `docker exec -it nyancat /bin/bash` then `ps aux` then `exit` to connect with an interactive shell into the container
 1. Run `docker stop nyancat` to stop and clean up that container (we said --rm so Docker will automatically clean it up when it stops)
 
 ### Compiling your app within the docker build
@@ -51,19 +52,19 @@ This example is Spring Boot's (a common Enterprise Java Framework) Docker demo/e
 1. Run `docker stop nyancat-windows`
 
 ## Copilot - Linux
-`copilot app init --domain jasonumiker.com nycancat`
-`copilot init` then choose the following options: 
-- Load Balanced Web Service
-- www
-- /home/jumiker/container-day-ecs/aws-cdk-nyan-cat/nyan-cat/Dockerfile
-- 80
-- Y
-Edit manifest to add alias
+1. `copilot app init --domain jasonumiker.com nycancat`
+1. `copilot env init`
+1. `copilot svc init`
+1. `copilot svc deploy`
+1. `copilot svc logs --follow`
+1. `copilot exec` then `ps aux` then `exit`
+1. Edit manifest to add alias - and while in there show some of the other settings and then a browser window w/documentation of the schema of the file (https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/)
+1. Show the AWS Console for CloudFormation (that these are CF stacks) and the ECS Console that it has configured it all for you there - but that you can do most if not all admin tasks via the CLI.
 
 ## Copilot - Windows
-`copilot app init --domain jasonumiker.com nycancat-windows`
-`copilot init` then choose the following options:
-Edit manifest to add alias
+`copilot app show` see how it can see our app and environment (details stored in AWS Parameter Store)
+`mkdir copilot` and `echo "application: copilot" > .workspace`
+`copilot svc init --app copilot` to deploy to our existing copilot app & env 
 
 ## CDK
 
