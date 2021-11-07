@@ -17,12 +17,12 @@ export class CdkStack extends cdk.Stack {
 
     // Import the existing ACM certificate to use
     const cert = certificateManager.Certificate.fromCertificateArn(this, 'certificate', 
-    'arn:aws:acm:ap-southeast-2:505070718513:certificate/4acc2716-8555-49ec-adec-8f565c135eee');
+    this.node.tryGetContext('cert_arn'));
 
     // Import the existing Route 53 Hosted Zone to use
     const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone', {
-      hostedZoneId: 'Z3MGKRT2K1FTPC',
-      zoneName: 'jasonumiker.com'
+      hostedZoneId: this.node.tryGetContext('route53_zone_id'),
+      zoneName: this.node.tryGetContext('route53_zone_name')
     });
 
     // Instantiate Fargate Service with just cluster and image
@@ -32,7 +32,7 @@ export class CdkStack extends cdk.Stack {
         image: ecs.ContainerImage.fromAsset('../nyan-cat'),
       },
       certificate: cert,
-      domainName: 'nyancat-cdk.jasonumiker.com',
+      domainName: this.node.tryGetContext('domain_name'),
       domainZone: zone
     });
   }

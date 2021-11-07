@@ -1,3 +1,9 @@
 {
-  "app": "npx ts-node bin/cdk.ts"
+  "app": "npx ts-node bin/cdk.ts",
+  "context": {
+    "cert_arn": "arn:aws:acm:ap-southeast-2:505070718513:certificate/4acc2716-8555-49ec-adec-8f565c135eee",
+    "route53_zone_id": "Z3MGKRT2K1FTPC",
+    "route53_zone_name": "jasonumiker.com",
+    "domain_name": "nyancat-cdk.jasonumiker.com"
+  }
 }
